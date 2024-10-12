@@ -1,4 +1,4 @@
-package com.wanandroid.app.wandroid
+package com.wandroid.app.wandroid
 
 import org.junit.Test
 

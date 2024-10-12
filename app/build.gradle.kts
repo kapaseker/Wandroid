@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.wanandroid.app.wandroid"
+    namespace = "com.wandroid.app"
     compileSdk = libs.versions.sdk.compile.get().toInt()
 
     defaultConfig {
-        applicationId = "com.wanandroid.app.wandroid"
+        applicationId = "com.wandroid.app"
         minSdk = libs.versions.sdk.min.get().toInt()
         targetSdk = libs.versions.sdk.target.get().toInt()
         versionCode = 1

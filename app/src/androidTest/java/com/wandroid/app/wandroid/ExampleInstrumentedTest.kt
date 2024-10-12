@@ -1,4 +1,4 @@
-package com.wanandroid.app.wandroid
+package com.wandroid.app.wandroid
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

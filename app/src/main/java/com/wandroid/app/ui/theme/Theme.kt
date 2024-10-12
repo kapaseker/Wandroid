@@ -1,6 +1,5 @@
-package com.wanandroid.app.wandroid.ui.theme
+package com.wandroid.app.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
