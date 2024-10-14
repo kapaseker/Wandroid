@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -60,21 +61,23 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-
-
-    // kotlin
+    // kotlin-collection
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.collections.immutable)
     //---------------------------------
 
+    //  navigation
+    implementation(libs.navigation.compose)
+    //---------------------------------
+
     //retrofit
     implementation(libs.retrofit2)
-    implementation(libs.retrofit2.gson)
-    implementation(libs.retrofit2.logging)
+//    implementation(libs.retrofit2.gson)
+//    implementation(libs.retrofit2.logging)
     //---------------------------------
 
     //json
-    implementation(libs.gson)
+//    implementation(libs.gson)
     //---------------------------------
 
 
@@ -82,4 +85,9 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+
+    // blankj
+    implementation(libs.blankj)
+
+    implementation(project(":app:repo"))
 }

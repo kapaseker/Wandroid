@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Wandroid"
 include(":app")
- 
+include(":app:repo")
