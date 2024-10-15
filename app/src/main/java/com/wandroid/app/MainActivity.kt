@@ -32,8 +32,8 @@ class MainActivity : ComponentActivity() {
                     val controller = rememberNavController()
                     NavHost(
                         navController = controller,
-//                        startDestination = HomeNav.make(EmptyArg),
-                        startDestination = TestNav.make(EmptyArg),
+                        startDestination = HomeNav.make(EmptyArg),
+//                        startDestination = TestNav.make(EmptyArg),
                     ) {
                         composablePage(
                             nav = HomeNav

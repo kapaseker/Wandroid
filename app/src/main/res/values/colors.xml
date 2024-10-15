@@ -11,5 +11,5 @@
     <color name="android">#1F5B89</color>
     <color name="app_primary">@color/android</color>
     <color name="background">@color/white</color>
-    <color name="font_main">@color/black</color>
+    <color name="text_main">@color/black</color>
 </resources>
