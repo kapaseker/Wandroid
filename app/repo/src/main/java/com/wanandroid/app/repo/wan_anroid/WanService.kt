@@ -8,14 +8,31 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface IWanService {
+
+    /**
+     * 问答
+     *
+     * @return
+     */
     @GET("/popular/wenda/json")
     fun wenda(): Call<WendaResult>
 
     /**
-     * Article
+     * 首页
      *
      * @param page page, start by 0.
      */
     @GET("/article/list/{page}/json")
     fun article(@Path("page") page: Int, @Query("page_size") row:Int): Call<ArticleResult>
+
+
+    /**
+     * 广场
+     *
+     * @param page
+     * @param row
+     * @return
+     */
+    @GET("/user_article/list/{page}/json")
+    fun square(@Path("page") page: Int, @Query("page_size") row:Int): Call<ArticleResult>
 }
