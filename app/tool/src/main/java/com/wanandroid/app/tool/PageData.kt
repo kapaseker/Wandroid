@@ -1,123 +1,12 @@
 package com.wanandroid.app.tool
 
-/**
- * 页面结果
- *
- * @author PG.Xie
- * created on 2021/10/11
- */
-data class PageResult<T>(val data: List<T>, val state: PageState) {
-
-    companion object {
-        /**
-         * 完全加载
-         *
-         * @param T
-         * @param data
-         */
-        fun <T> complete(data: List<T>) = PageResult(data, PageState.COMPLETE)
-
-        /**
-         * 没有更多的情况，部分加载完成
-         *
-         * @param T
-         * @param data
-         */
-        fun <T> nomore(data: List<T>) = PageResult(data, PageState.PARTLY_COMPLETE)
-
-        /**
-         * 空结果，无结果
-         *
-         * @param T
-         */
-        fun <T> empty() = PageResult(emptyList<T>(), PageState.EMPTY)
-
-        /**
-         * 自动，当 [datas] 的大小：
-         * 1. 为0，则表示空状态[empty]
-         * 2. 小于[expectedSize] 表示没有更多
-         * 3. 其他状态为成功，完全加载
-         *
-         * @param T
-         * @param datas
-         * @param expectedSize
-         */
-        fun <T> auto(data: List<T>, expectedSize: Int) = when {
-            data.isEmpty() -> empty()
-            data.size >= expectedSize -> complete(data)
-            else -> nomore(data)
-        }
-    }
-
-    /**
-     * 数据转换
-     *
-     * @param D
-     * @param transform
-     * @receiver
-     * @return
-     */
-    fun <D> map(transform: (T) -> D): PageResult<D> {
-        return PageResult(this.data.map(transform), this.state)
-    }
-
-    /**
-     * 数据转换
-     *
-     * @param D
-     * @param data
-     * @receiver
-     * @return
-     */
-    fun <D> map(data: List<D>): PageResult<D> {
-        return PageResult(data, this.state)
-    }
-}
-
-data class LoadResult<T>(val data: T, val state: PageState) {
-    companion object {
-
-        /**
-         * 完全加载
-         *
-         * @param T
-         * @param data
-         */
-        fun <T> complete(data: T) = LoadResult(data, PageState.COMPLETE)
-
-        /**
-         * 没有更多的情况，部分加载完成
-         *
-         * @param T
-         * @param data
-         */
-        fun <T> nomore(data: T) = LoadResult(data, PageState.PARTLY_COMPLETE)
-
-        /**
-         * 空结果，无结果
-         *
-         * @param T
-         */
-        fun <T> empty(def: T) = LoadResult(def, PageState.EMPTY)
-    }
-
-    /**
-     * 数据转换
-     *
-     * @param D
-     * @param transform
-     * @receiver
-     * @return
-     */
-    fun <D> map(transform: (T) -> D): LoadResult<D> {
-        return LoadResult(transform.invoke(this.data), this.state)
-    }
-}
+import android.provider.ContactsContract.Data
 
 data class LoadData<T>(
     val loadingState: LoadingState,
     val resultState: ResultState,
-    val result: LoadResult<T>
+    val dataState: DataState,
+    val data: T,
 ) {
 
     companion object {
@@ -131,19 +20,46 @@ data class LoadData<T>(
         fun <T> loading(def: T) = LoadData(
             LoadingState.START,
             ResultState.SUCCESS,
-            LoadResult.empty(def)
+            DataState.EMPTY,
+            def
         )
 
         /**
-         * 数据成功加载
+         * 完全加载
          *
          * @param T
-         * @param result
+         * @param data
          */
-        fun <T> success(result: LoadResult<T>) = LoadData(
+        fun <T> complete(data: T) = LoadData(
             LoadingState.COMPLETE,
             ResultState.SUCCESS,
-            result,
+            DataState.COMPLETE,
+            data,
+        )
+
+        /**
+         * 没有更多的情况，部分加载完成
+         *
+         * @param T
+         * @param data
+         */
+        fun <T> nomore(data: T) = LoadData(
+            LoadingState.COMPLETE,
+            ResultState.SUCCESS,
+            DataState.PARTLY_COMPLETE,
+            data,
+        )
+
+        /**
+         * 空结果，无结果
+         *
+         * @param T
+         */
+        fun <T> empty(def: T) = LoadData(
+            LoadingState.COMPLETE,
+            ResultState.SUCCESS,
+            DataState.EMPTY,
+            def,
         )
 
         /**
@@ -153,15 +69,19 @@ data class LoadData<T>(
          * @param error
          * @param def
          */
-        fun <T> error(error: ResultState, def: T) = LoadData(
-            LoadingState.COMPLETE,
+        fun <T> error(error: ResultState, def: T): LoadData<T> {
+
             if (error == ResultState.SUCCESS) {
-                ResultState.UNKNOWN_ERROR
-            } else {
-                error
-            },
-            LoadResult.empty(def)
-        )
+                throw  IllegalArgumentException("error can't be successful state")
+            }
+
+            return LoadData(
+                loadingState = LoadingState.COMPLETE,
+                resultState = error,
+                dataState = DataState.EMPTY,
+                data = def
+            )
+        }
     }
 
     /**
@@ -173,14 +93,34 @@ data class LoadData<T>(
      * @return
      */
     fun <D> map(transform: (T) -> D): LoadData<D> {
-        return LoadData(this.loadingState, this.resultState, this.result.map(transform))
+        return LoadData(
+            loadingState = this.loadingState,
+            resultState = this.resultState,
+            dataState = this.dataState,
+            data = transform.invoke(this.data)
+        )
+    }
+
+    /**
+     * 只要状态，不要数据
+     *
+     * @return
+     */
+    fun onlyState(): LoadData<Unit> {
+        return LoadData(
+            loadingState = this.loadingState,
+            resultState = this.resultState,
+            dataState = this.dataState,
+            data = Unit,
+        )
     }
 }
 
 data class PageData<T>(
     val loadingState: LoadingState,
     val resultState: ResultState,
-    val result: PageResult<T> = PageResult.empty()
+    val dataState: DataState,
+    val data: List<T>,
 ) {
 
     companion object {
@@ -194,19 +134,63 @@ data class PageData<T>(
         fun <T> loading() = PageData<T>(
             LoadingState.START,
             ResultState.SUCCESS,
-            PageResult.empty()
+            DataState.EMPTY,
+            emptyList(),
         )
 
         /**
-         * 数据成功加载
+         * 完全加载
          *
          * @param T
-         * @param result
+         * @param data
          */
-        fun <T> success(result: PageResult<T>) = PageData<T>(
+        fun <T> complete(data: List<T>) = PageData(
             LoadingState.COMPLETE,
             ResultState.SUCCESS,
-            result,
+            DataState.COMPLETE,
+            data,
+        )
+
+        /**
+         * 没有更多的情况，部分加载完成
+         *
+         * @param T
+         * @param data
+         */
+        fun <T> nomore(data: List<T>) = PageData(
+            LoadingState.COMPLETE,
+            ResultState.SUCCESS,
+            DataState.PARTLY_COMPLETE,
+            data,
+        )
+
+        /**
+         * 空结果，无结果
+         *
+         * @param T
+         */
+        fun <T> empty(def: List<T>) = PageData(
+            LoadingState.COMPLETE,
+            ResultState.SUCCESS,
+            DataState.EMPTY,
+            def,
+        )
+
+        /**
+         * 自动结果
+         *
+         * @param expectedSize 期望的数量
+         * @param def
+         */
+        fun <T> auto(expectedSize: Int, def: List<T>) = PageData(
+            LoadingState.COMPLETE,
+            ResultState.SUCCESS,
+            when {
+                def.isEmpty() -> DataState.EMPTY
+                def.size >= expectedSize -> DataState.PARTLY_COMPLETE
+                else -> DataState.COMPLETE
+            },
+            def,
         )
 
         /**
@@ -215,15 +199,19 @@ data class PageData<T>(
          * @param T
          * @param error
          */
-        fun <T> error(error: ResultState) = PageData<T>(
-            LoadingState.COMPLETE,
+        fun <T> error(error: ResultState): PageData<T> {
+
             if (error == ResultState.SUCCESS) {
-                ResultState.UNKNOWN_ERROR
-            } else {
-                error
-            },
-            PageResult.empty()
-        )
+                throw  IllegalArgumentException("error can't be successful state")
+            }
+
+            return PageData(
+                loadingState = LoadingState.COMPLETE,
+                resultState = error,
+                dataState = DataState.EMPTY,
+                data = emptyList()
+            )
+        }
     }
 
     /**
@@ -238,7 +226,8 @@ data class PageData<T>(
         return PageData(
             this.loadingState,
             this.resultState,
-            this.result.map(transform)
+            this.dataState,
+            this.data.map { transform(it) },
         )
     }
 
@@ -253,7 +242,22 @@ data class PageData<T>(
         return PageData(
             this.loadingState,
             this.resultState,
-            this.result.map(result)
+            this.dataState,
+            result
+        )
+    }
+
+    /**
+     * 只要状态，不要数据
+     *
+     * @return
+     */
+    fun onlyState(): PageData<Unit> {
+        return PageData(
+            loadingState = this.loadingState,
+            resultState = this.resultState,
+            dataState = this.dataState,
+            data = emptyList(),
         )
     }
 }
@@ -305,7 +309,7 @@ enum class LoadingState {
     COMPLETE,
 }
 
-enum class PageState {
+enum class DataState {
     /**
      * 完整加载
      *

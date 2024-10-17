@@ -107,4 +107,5 @@ dependencies {
     implementation(libs.blankj)
 
     implementation(project(":app:repo"))
+    implementation(project(":app:tool"))
 }
