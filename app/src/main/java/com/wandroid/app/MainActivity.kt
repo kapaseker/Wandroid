@@ -9,8 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import com.wandroid.app.ext.navigation.EmptyArg
-import com.wandroid.app.ext.navigation.composablePage
+import com.wandroid.app.util.navigation.EmptyArg
+import com.wandroid.app.util.navigation.composablePage
 import com.wandroid.app.page.home.HomeNav
 import com.wandroid.app.page.home.HomePage
 import com.wandroid.app.page.test.TestNav

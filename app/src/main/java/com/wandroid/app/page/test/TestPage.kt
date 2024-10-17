@@ -19,7 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandroid.app.R
-import com.wandroid.app.ext.navigation.BaseEmptyArgNavPath
+import com.wandroid.app.util.navigation.BaseEmptyArgNavPath
 import com.wandroid.app.ui.skeleton.skeleton
 import com.wandroid.app.ui.theme.WandroidTheme
 import com.wandroid.app.ui.widget.Hanging

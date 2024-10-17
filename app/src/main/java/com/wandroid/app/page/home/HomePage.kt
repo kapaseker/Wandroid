@@ -1,10 +1,13 @@
 package com.wandroid.app.page.home
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,20 +25,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.wandroid.app.R
-import com.wandroid.app.ext.navigation.BaseEmptyArgNavPath
+import com.wandroid.app.util.navigation.BaseEmptyArgNavPath
 import com.wandroid.app.page.home.business.HomeArticle
 import com.wandroid.app.page.home.business.HomeViewModel
 import com.wandroid.app.ui.widget.AuthorTitle
@@ -44,13 +50,17 @@ import com.wandroid.app.ui.widget.DescTitle
 import com.wandroid.app.ui.widget.Icon
 import com.wandroid.app.ui.widget.ItemTitle
 import com.wandroid.app.ui.widget.MainText
+import com.wandroid.app.ui.widget.TextTaber
 import com.wandroid.app.ui.widget.simpleClick
 import com.wandroid.app.ui.widget.drawBackground
 import com.wandroid.app.util.getString
 import com.wandroid.app.util.inColor
 import com.wandroid.app.util.inDp
 import com.wandroid.app.util.inString
+import com.wandroid.app.util.navigation.goto
+import com.wandroid.app.util.navigation.gotoWebActivity
 import com.wandroid.app.util.px
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 
 object HomeNav : BaseEmptyArgNavPath() {
@@ -67,23 +77,34 @@ fun HomePage(
     scope: CoroutineScope = rememberCoroutineScope(),
 ) {
 
+    val context = LocalContext.current
+
+    fun openWebAction(url:String) {
+        context.gotoWebActivity(url)
+//        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+//        context.goto(browserIntent)
+    }
+
     val article by i.homeArticle.collectAsState()
 
+    var homeTab by rememberSaveable("HomeTab") { mutableIntStateOf(0) }
     val listState = rememberLazyListState()
 
     Box(
         modifier = Modifier
+            .drawBackground(R.color.background.inColor())
             .statusBarsPadding()
             .fillMaxSize()
     ) {
         LazyColumn(
-            state = listState, modifier = Modifier
-                .fillMaxSize()
-                .drawBackground(R.color.background.inColor())
+            state = listState, modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = R.dimen.bottom_bar_height.inDp())
         ) {
 
             item {
-                HomeHeader()
+                HomeHeader() {
+
+                }
             }
 
             stickyHeader {
@@ -98,64 +119,40 @@ fun HomePage(
                     if (a != 0) {
                         Divider()
                     }
-                    HomeArticleItem(modifier = Modifier.fillMaxWidth(), b)
+                    ArticleItem(modifier = Modifier.fillMaxWidth(), b) {
+                        openWebAction(b.link)
+                    }
                 }
             }
         }
 
-        BottomBar(modifier = Modifier.align(Alignment.BottomCenter), select = 0)
-    }
-}
-
-@Composable
-private fun TabItem(s:Boolean, text:String) {
-
-    val selectedColor = R.color.text_main.inColor()
-    val activeColor = R.color.text_active.inColor()
-    val selected by rememberUpdatedState(s)
-
-    val color by remember {
-        derivedStateOf {
-            if (selected) selectedColor else activeColor
+        BottomBar(modifier = Modifier.align(Alignment.BottomCenter), selected = homeTab) {
+            homeTab = it
         }
-    }
-
-    Box(
-        modifier = Modifier.size(R.dimen.home_tab.inDp())
-    ) {
-       MainText(text = text, color = color, size = R.dimen.text_mini.inDp(), modifier = Modifier.align(Alignment.Center))
     }
 }
 
 @Composable
 private fun HomeTaber(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(R.dimen.home_tab.inDp())
-            .drawBackground(R.color.background.inColor())
-            .padding(horizontal = R.dimen.page_padding.inDp())
+    var selectTab by rememberSaveable { mutableIntStateOf(0) }
+    TextTaber(
+        modifier = modifier,
+        tabs = persistentListOf(R.string.latest.inString(), R.string.hottest.inString()),
+        selected = selectTab
     ) {
-        Row {
-            TabItem(s = true, text = R.string.latest.inString())
-            TabItem(s = false, text = R.string.hottest.inString())
-        }
-        Spacer(modifier = Modifier
-            .width(R.dimen.home_tab.inDp())
-            .height(2.px)
-            .drawBackground(R.color.text_main.inColor())
-            .align(Alignment.BottomStart))
+        selectTab = it
     }
 }
 
 @Composable
 fun HomeHeader(
     modifier: Modifier = Modifier,
+    onSearch:() -> Unit,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .height(72.dp)
             .background(R.color.background.inColor())
     ) {
         Row(
@@ -164,12 +161,15 @@ fun HomeHeader(
                 .padding(horizontal = R.dimen.page_padding.inDp()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            MainText(text = R.string.home_page.inString(), size = R.dimen.text_page.inDp(), fontWeight = FontWeight.Bold)
+            MainText(text = R.string.home_page.inString(),
+                size = R.dimen.text_page.inDp(),
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 modifier = Modifier
                     .clip(CircleShape)
-                    .simpleClick { }
+                    .simpleClick(onClick = onSearch)
                     .padding(12.dp)
                     .size(20.dp),
                 resource = R.drawable.search,
@@ -185,13 +185,15 @@ fun Divider(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .height(1.px)
-            .drawBackground(R.color.app_primary.inColor())
+            .drawBackground(R.color.app_primary_divider.inColor())
     )
 }
 
 @Composable
-fun HomeArticleItem(modifier: Modifier, item: HomeArticle) {
-    Column(modifier = modifier.padding(20.dp)) {
+fun ArticleItem(modifier: Modifier, item: HomeArticle, onClick:() -> Unit) {
+    Column(modifier = modifier
+        .simpleClick(onClick = onClick)
+        .padding(20.dp)) {
 
         val author by remember {
             derivedStateOf {

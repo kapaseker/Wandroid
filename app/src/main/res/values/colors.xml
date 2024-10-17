@@ -17,4 +17,5 @@
     <color name="icon_active">#363636</color>
     <color name="icon_select">@color/black</color>
 
+    <color name="app_primary_divider">#901F5B89</color>
 </resources>

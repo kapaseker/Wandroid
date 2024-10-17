@@ -18,7 +18,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wandroid.app.R
-import com.wandroid.app.ext.degree
+import com.wandroid.app.util.degree
 import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.min

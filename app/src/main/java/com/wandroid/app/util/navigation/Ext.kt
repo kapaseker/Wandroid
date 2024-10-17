@@ -1,4 +1,4 @@
-package com.wandroid.app.ext.navigation
+package com.wandroid.app.util.navigation
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedContentTransitionScope
