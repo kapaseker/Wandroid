@@ -13,4 +13,5 @@
     <dimen name="home_tab_height">40dp</dimen>
     <dimen name="home_tab_width">60dp</dimen>
     <dimen name="bottom_bar_height">48dp</dimen>
+    <dimen name="bottom_bar_icon_size">32dp</dimen>
 </resources>
