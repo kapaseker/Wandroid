@@ -81,8 +81,6 @@ fun HomePage(
 
     fun openWebAction(url:String) {
         context.gotoWebActivity(url)
-//        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-//        context.goto(browserIntent)
     }
 
     val article by i.homeArticle.collectAsState()
@@ -107,13 +105,6 @@ fun HomePage(
                 }
             }
 
-            stickyHeader {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    HomeTaber()
-                    Divider(Modifier.align(Alignment.BottomStart))
-                }
-            }
-
             itemsIndexed(items = article.article, key = { a, b -> b.name }) { a, b ->
                 Column(modifier = Modifier.fillMaxWidth()) {
                     if (a != 0) {
@@ -129,18 +120,6 @@ fun HomePage(
         BottomBar(modifier = Modifier.align(Alignment.BottomCenter), selected = homeTab) {
             homeTab = it
         }
-    }
-}
-
-@Composable
-private fun HomeTaber(modifier: Modifier = Modifier) {
-    var selectTab by rememberSaveable { mutableIntStateOf(0) }
-    TextTaber(
-        modifier = modifier,
-        tabs = persistentListOf(R.string.latest.inString(), R.string.hottest.inString()),
-        selected = selectTab
-    ) {
-        selectTab = it
     }
 }
 
